@@ -1,14 +1,23 @@
 {
-  "name": "annoyingnoises-registry",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "astro": "^5.16.8"
-  }
+	"name": "annoyingnoises-registry",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro",
+		"biome:check": "biome check",
+		"biome:fix": "biome check --write",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix"
+	},
+	"dependencies": {
+		"@astrojs/cloudflare": "^12.6.12",
+		"astro": "^5.16.8"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.11",
+		"oxlint": "^1.38.0"
+	}
 }

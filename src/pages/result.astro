@@ -1,5 +1,14 @@
 ---
+import Layout from "@/components/Layout.astro";
+
 const result = Astro.url.searchParams.get("text") || "no-result";
 ---
 
-<h1>{result}</h1>
+<Layout title="Result">
+    <header>
+        <h1>Result</h1>
+    </header>
+    <main>
+        <p>{result}</p>
+    </main>
+</Layout>

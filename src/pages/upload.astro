@@ -1,0 +1,23 @@
+---
+import { actions } from "astro:actions";
+import Layout from "@/components/Layout.astro";
+
+const result = Astro.getActionResult(actions.file.downloadSound);
+
+if (result && !result.error) {
+    return Astro.redirect(`/result?text=${encodeURIComponent(result.data.message)}`);
+}
+---
+
+<Layout title="Upload">
+    <header>
+        <h1>Upload Sounds</h1>
+    </header>
+    <main>
+        <form method="POST" action={actions.file.downloadSound} enctype="multipart/form-data">
+            <label for="file">Upload File:</label>
+            <input type="file" id="file" name="file" />
+            <button>Submit</button>
+        </form>
+    </main>
+</Layout>

@@ -1,16 +1,15 @@
 ---
+import { actions } from "astro:actions";
+import Layout from "@/components/Layout.astro";
 
+const sounds = await Astro.callAction(actions.readSounds.listAll, {});
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Home">
+	<header>
+		<h1>annoyingnoises-oracle</h1>
+	</header>
+
+	<main>sound picker</main>
+	<pre>{JSON.stringify(sounds, null, 2)}</pre>
+</Layout>

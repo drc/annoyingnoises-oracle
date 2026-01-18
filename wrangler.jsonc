@@ -1,4 +1,5 @@
 {
+	"$schema": "./node_modules/wrangler/config-schema.json",
 	"main": "dist/_worker.js/index.js",
 	"name": "annoyingnoises-registry",
 	"compatibility_date": "2026-01-11",
@@ -9,5 +10,12 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"r2_buckets": [
+		{
+			"binding": "BUCKET",
+			"bucket_name": "transcendence",
+			"remote": true
+		}
+	]
 }

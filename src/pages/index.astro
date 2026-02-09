@@ -1,19 +1,1632 @@
 ---
-import { actions } from "astro:actions";
-import Layout from "@/components/Layout.astro";
-import SoundList from "@/components/SoundList.astro";
-
-const sounds = []; //await Astro.callAction(actions.readSounds.listAll, {});
+/**
+ * ANNOYINGNOISES — Warm Phosphor
+ * CRT-inspired terminal aesthetic with warm amber/orange phosphor glow,
+ * teal accents, scan-line overlay, and a single-page dashboard layout.
+ * Sections: header > stats bar > split (sounds | events) > config accordion.
+ */
 ---
 
-<Layout title="Home">
-	<div class="index-header">
-		<h1>Home</h1>
-	</div>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ANNOYINGNOISES :: GSI Sound Registry</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
 
-	<main>
-		<h2>Pick a Sound</h2>
-		<SoundList sounds={sounds} />
-	</main>
-</Layout>
+		<style is:global>
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
 
+			:root {
+				/* ── Warm phosphor palette ── */
+				--bg: #0c0a08;
+				--bg-raised: #141210;
+				--bg-input: #100e0c;
+				--border: #2a2318;
+				--border-hi: #3d3325;
+
+				/* ── Primary: amber/orange family ── */
+				--amber: #f0a030;
+				--amber-bright: #ffbe44;
+				--amber-dim: #8a6520;
+				--amber-glow: #f0a03025;
+				--amber-dark: #1a1408;
+				--orange: #e07828;
+
+				/* ── Accent: teal ── */
+				--teal: #3cc8b4;
+				--teal-dim: #1a6a5e;
+				--teal-glow: #3cc8b420;
+				--teal-dark: #0a1e1a;
+
+				/* ── Status: green for mapped/active ── */
+				--green: #5cd87a;
+				--green-dim: #2a6e3a;
+				--green-dark: #0e1e12;
+
+				/* ── Danger: red ── */
+				--red: #e05040;
+				--red-bright: #ff6b5a;
+				--red-dim: #3a1510;
+
+				/* ── Accent: lavender for items ── */
+				--lavender: #b098e0;
+				--lavender-dim: #5a4880;
+
+				/* ── Neutral: slate for muted/inactive states ── */
+				--slate: #7a8a9a;
+				--slate-dim: #4a5562;
+				--slate-dark: #141820;
+				--slate-border: #2a3040;
+
+				/* ── Text hierarchy ── */
+				--text-title: #f0ebe4;
+				--text: #a89880;
+				--text-sec: #887868;
+				--text-dim: #5e5444;
+				--text-muted: #3e3830;
+
+				--mono: "IBM Plex Mono", monospace;
+				--sans: "Space Grotesk", sans-serif;
+			}
+
+			html {
+				font-size: 13px;
+			}
+
+			html,
+			body {
+				height: 100%;
+			}
+
+			body {
+				font-family: var(--mono);
+				background: var(--bg);
+				color: var(--text);
+				height: 100vh;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+			}
+
+			/* CRT scan-lines and vignette removed for readability */
+
+			/* ═══════════════════════════
+       HEADER
+    ═══════════════════════════ */
+			.header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 14px 28px;
+				border-bottom: 1px solid var(--border);
+				z-index: 100;
+				background: var(--bg);
+				box-shadow: 0 1px 12px #00000040;
+				flex-shrink: 0;
+			}
+
+			.header-left {
+				display: flex;
+				align-items: center;
+				gap: 16px;
+			}
+
+			.header-logo {
+				font-family: var(--sans);
+				font-weight: 700;
+				font-size: 1.3rem;
+				color: var(--amber);
+				text-shadow:
+					0 0 18px var(--amber-glow),
+					0 0 40px var(--amber-glow);
+				letter-spacing: 2px;
+			}
+
+			.header-cursor {
+				display: inline-block;
+				width: 8px;
+				height: 1.1em;
+				background: var(--amber);
+				margin-left: 4px;
+				animation: blink 1s step-end infinite;
+				box-shadow: 0 0 6px var(--amber-glow);
+			}
+
+			@keyframes blink {
+				50% {
+					opacity: 0;
+				}
+			}
+
+			.header-tag {
+				font-size: 0.65rem;
+				color: var(--text-dim);
+				border: 1px solid var(--border);
+				padding: 2px 10px;
+				letter-spacing: 1px;
+			}
+
+			.header-right {
+				display: flex;
+				gap: 8px;
+			}
+
+			.cmd-btn {
+				font-family: var(--mono);
+				font-size: 0.75rem;
+				padding: 7px 16px;
+				background: var(--bg-raised);
+				border: 1px solid var(--border-hi);
+				color: var(--amber);
+				cursor: pointer;
+				transition: all 0.15s;
+				letter-spacing: 0.5px;
+			}
+
+			.cmd-btn:hover {
+				background: var(--amber-dark);
+				border-color: var(--amber-dim);
+				text-shadow: 0 0 8px var(--amber-glow);
+			}
+
+			.cmd-btn--teal {
+				color: var(--teal);
+			}
+			.cmd-btn--teal:hover {
+				background: var(--teal-dark);
+				border-color: var(--teal-dim);
+				text-shadow: 0 0 8px var(--teal-glow);
+			}
+
+			/* ═══════════════════════════
+       STATS BAR
+    ═══════════════════════════ */
+			.stats-bar {
+				display: grid;
+				grid-template-columns: repeat(5, 1fr);
+				border-bottom: 1px solid var(--border);
+				flex-shrink: 0;
+			}
+
+			.stat-cell {
+				padding: 16px 20px;
+				border-right: 1px solid var(--border);
+				transition: background 0.2s;
+			}
+
+			.stat-cell:last-child {
+				border-right: none;
+			}
+			.stat-cell:hover {
+				background: var(--bg-raised);
+			}
+
+			.stat-cell-label {
+				font-size: 0.6rem;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				color: var(--text-dim);
+				margin-bottom: 6px;
+			}
+
+			.stat-cell-value {
+				font-size: 1.8rem;
+				font-weight: 700;
+				font-family: var(--sans);
+				line-height: 1;
+			}
+
+			.stat-cell-value--amber {
+				color: var(--amber);
+				text-shadow: 0 0 10px var(--amber-glow);
+			}
+
+			.stat-cell-value--orange {
+				color: var(--orange);
+				text-shadow: 0 0 10px #e0782820;
+			}
+
+			.stat-cell-value--red {
+				color: var(--red);
+			}
+
+			.stat-cell-value--teal {
+				color: var(--teal);
+				text-shadow: 0 0 10px var(--teal-glow);
+			}
+
+			.stat-cell-sub {
+				font-size: 0.65rem;
+				color: var(--text-sec);
+				margin-top: 4px;
+			}
+
+			/* Mini leaderboard inside stat cell */
+			.mini-leader {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+
+			.mini-leader-row {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 0.7rem;
+			}
+
+			.mini-leader-rank {
+				color: var(--amber);
+				width: 14px;
+			}
+			.mini-leader-name {
+				color: var(--text);
+				flex: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.mini-leader-bar {
+				flex: 0 0 40px;
+				height: 3px;
+				background: var(--border);
+				overflow: hidden;
+			}
+			.mini-leader-fill {
+				height: 100%;
+				background: linear-gradient(90deg, var(--orange), var(--amber));
+			}
+			.mini-leader-count {
+				color: var(--text-dim);
+				width: 20px;
+				text-align: right;
+			}
+
+			/* ═══════════════════════════
+       MAIN SPLIT
+    ═══════════════════════════ */
+			.split {
+				display: grid;
+				grid-template-columns: 350px 1fr;
+				flex: 1;
+				overflow: hidden;
+			}
+
+			/* ─── LEFT: SOUNDS PANEL ─── */
+			.sounds-panel {
+				border-right: 1px solid var(--border);
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+			}
+
+			.panel-bar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 10px 16px;
+				border-bottom: 1px solid var(--border);
+				background: var(--bg-raised);
+				flex-shrink: 0;
+			}
+
+			.panel-bar-title {
+				font-size: 0.65rem;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				color: var(--text-dim);
+			}
+
+			.panel-bar-count {
+				font-size: 0.7rem;
+				color: var(--amber-dim);
+			}
+
+			/* upload zone */
+			.upload-strip {
+				padding: 14px 16px;
+				border-bottom: 1px solid var(--border);
+				flex-shrink: 0;
+			}
+
+			.upload-drop {
+				border: 1px dashed var(--border-hi);
+				padding: 18px;
+				text-align: center;
+				cursor: pointer;
+				transition: all 0.2s;
+				background: var(--bg-input);
+			}
+
+			.upload-drop:hover {
+				border-color: var(--amber-dim);
+				background: var(--amber-dark);
+			}
+
+			.upload-drop.dragging {
+				border-color: var(--amber);
+				background: var(--amber-dark);
+				box-shadow: 0 0 20px var(--amber-glow);
+			}
+
+			.upload-prompt {
+				font-size: 0.75rem;
+				color: var(--text-dim);
+			}
+
+			.upload-prompt b {
+				color: var(--amber);
+				cursor: pointer;
+			}
+
+			/* search */
+			.search-strip {
+				padding: 8px 16px;
+				border-bottom: 1px solid var(--border);
+				flex-shrink: 0;
+			}
+
+			.search-input {
+				width: 100%;
+				font-family: var(--mono);
+				font-size: 0.8rem;
+				padding: 7px 10px;
+				background: var(--bg-input);
+				border: 1px solid var(--border);
+				color: var(--amber);
+				outline: none;
+				caret-color: var(--amber);
+				transition: border-color 0.2s;
+			}
+
+			.search-input:focus {
+				border-color: var(--amber-dim);
+			}
+			.search-input::placeholder {
+				color: var(--text-dim);
+			}
+
+			/* sound list */
+			.sound-scroll {
+				flex: 1;
+				overflow-y: auto;
+			}
+
+			.sound-scroll::-webkit-scrollbar {
+				width: 3px;
+			}
+			.sound-scroll::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			.sound-scroll::-webkit-scrollbar-thumb {
+				background: var(--border-hi);
+			}
+
+			.sound-row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 10px 16px;
+				border-bottom: 1px solid var(--border);
+				transition: all 0.15s;
+				position: relative;
+			}
+
+			.sound-row:hover {
+				background: var(--bg-raised);
+			}
+
+			.sound-row.in-use {
+				background: var(--amber-dark);
+				border-bottom-color: var(--amber-dim);
+			}
+
+			.sound-row-play {
+				width: 30px;
+				height: 30px;
+				border-radius: 50%;
+				border: none;
+				background: var(--bg-raised);
+				color: var(--text-dim);
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 0.6rem;
+				flex-shrink: 0;
+				transition: all 0.2s;
+				box-shadow: inset 0 0 0 1px var(--border-hi);
+			}
+
+			.sound-row-play:hover {
+				background: var(--amber-dark);
+				color: var(--amber);
+				box-shadow:
+					inset 0 0 0 1px var(--amber-dim),
+					0 0 10px var(--amber-glow);
+			}
+
+			.sound-row-play.on {
+				background: var(--amber);
+				color: var(--bg);
+				box-shadow:
+					0 0 12px var(--amber-glow),
+					0 0 24px #f0a03030;
+				animation: pulse-play 1.2s ease infinite;
+			}
+
+			@keyframes pulse-play {
+				0%,
+				100% {
+					box-shadow:
+						0 0 12px var(--amber-glow),
+						0 0 24px #f0a03030;
+				}
+				50% {
+					box-shadow:
+						0 0 16px #f0a03066,
+						0 0 32px #f0a03044;
+				}
+			}
+
+			.sound-row-info {
+				flex: 1;
+				min-width: 0;
+			}
+
+			.sound-row-name {
+				font-size: 0.8rem;
+				color: var(--text-title);
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.sound-row-meta {
+				font-size: 0.6rem;
+				color: var(--text-sec);
+				margin-top: 2px;
+			}
+
+			.sound-row-badge {
+				font-size: 0.55rem;
+				letter-spacing: 0.5px;
+				color: var(--slate);
+				background: var(--slate-dark);
+				border: 1px solid var(--slate-border);
+				padding: 2px 8px;
+				border-radius: 3px;
+				white-space: nowrap;
+				flex-shrink: 0;
+			}
+
+			.sound-row-badge--active {
+				color: var(--green);
+				border-color: var(--green-dim);
+				background: var(--green-dark);
+			}
+
+			/* ─── FULL-WIDTH EVENTS PANEL ─── */
+			.events-panel {
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+			}
+
+			.events-scroll {
+				flex: 1;
+				overflow-y: auto;
+				overflow-x: auto;
+				padding: 0;
+			}
+
+			.events-scroll::-webkit-scrollbar {
+				width: 3px;
+			}
+			.events-scroll::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			.events-scroll::-webkit-scrollbar-thumb {
+				background: var(--border-hi);
+			}
+
+			.events-list {
+				display: flex;
+				flex-direction: column;
+				gap: 0;
+			}
+
+			/* ── Event row: table-aligned horizontal row ── */
+			.ev-row {
+				display: grid;
+				grid-template-columns: 2fr 60px 3fr 70px 2.5fr;
+				grid-template-rows: 1fr;
+				align-items: center;
+				gap: 0;
+				padding: 0;
+				border-bottom: 1px solid var(--border);
+				border-left: 4px solid var(--slate-dim);
+				background: var(--bg-raised);
+				transition: all 0.2s;
+				animation: fadeIn 0.3s ease both;
+				overflow: hidden;
+			}
+
+			.ev-row:nth-child(2) {
+				animation-delay: 0.03s;
+			}
+			.ev-row:nth-child(3) {
+				animation-delay: 0.06s;
+			}
+			.ev-row:nth-child(4) {
+				animation-delay: 0.09s;
+			}
+			.ev-row:nth-child(5) {
+				animation-delay: 0.12s;
+			}
+			.ev-row:nth-child(6) {
+				animation-delay: 0.15s;
+			}
+			.ev-row:nth-child(7) {
+				animation-delay: 0.18s;
+			}
+			.ev-row:nth-child(8) {
+				animation-delay: 0.21s;
+			}
+			.ev-row:nth-child(9) {
+				animation-delay: 0.24s;
+			}
+			.ev-row:nth-child(10) {
+				animation-delay: 0.27s;
+			}
+
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+					transform: translateY(4px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.ev-row:hover {
+				background: #181614;
+			}
+
+			/* ── Category-colored left borders ── */
+			.ev-row[data-cat="hero"] {
+				border-left-color: #ffcc66;
+			}
+			.ev-row[data-cat="game"] {
+				border-left-color: #66eedd;
+			}
+			.ev-row[data-cat="kill"] {
+				border-left-color: #ff8877;
+			}
+			.ev-row[data-cat="item"] {
+				border-left-color: #ccaaff;
+			}
+
+			/* Mapped vs unmapped states */
+			.ev-row--mapped {
+				background: #111310;
+			}
+			.ev-row--mapped:hover {
+				background: #141712;
+			}
+			/* Keep category border on hover for mapped */
+			.ev-row--mapped[data-cat="hero"]:hover {
+				border-left-color: #ffcc66;
+			}
+			.ev-row--mapped[data-cat="game"]:hover {
+				border-left-color: #66eedd;
+			}
+			.ev-row--mapped[data-cat="kill"]:hover {
+				border-left-color: #ff8877;
+			}
+			.ev-row--mapped[data-cat="item"]:hover {
+				border-left-color: #ccaaff;
+			}
+
+			.ev-row--unmapped {
+				opacity: 0.65;
+			}
+			.ev-row--unmapped:hover {
+				opacity: 1;
+			}
+
+			/* ── Column 1: Event name zone ── */
+			.ev-col-name {
+				padding: 10px 12px;
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				min-width: 0;
+				border-right: 1px solid var(--border);
+				background: transparent;
+				height: 100%;
+				justify-content: center;
+			}
+
+			.ev-row-name {
+				font-size: 0.95rem;
+				font-weight: 700;
+				font-family: var(--sans);
+				color: #ffffff;
+				white-space: nowrap;
+				letter-spacing: 0.3px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.ev-row--unmapped .ev-row-name {
+				color: #b0a898;
+			}
+
+			.ev-row-id {
+				font-size: 0.55rem;
+				font-family: var(--mono);
+				color: var(--text-muted);
+				letter-spacing: 1px;
+				text-transform: uppercase;
+			}
+
+			/* ── Column 2: Category pill zone ── */
+			.ev-col-cat {
+				padding: 10px 8px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-right: 1px solid var(--border);
+				height: 100%;
+			}
+
+			/* Subtle category-tinted backgrounds */
+			.ev-row[data-cat="hero"] .ev-col-cat {
+				background: #1a160e;
+			}
+			.ev-row[data-cat="game"] .ev-col-cat {
+				background: #0c1816;
+			}
+			.ev-row[data-cat="kill"] .ev-col-cat {
+				background: #1a110f;
+			}
+			.ev-row[data-cat="item"] .ev-col-cat {
+				background: #14101c;
+			}
+
+			.ev-cat {
+				font-size: 0.55rem;
+				font-family: var(--mono);
+				font-weight: 600;
+				letter-spacing: 1px;
+				text-transform: uppercase;
+				padding: 4px 10px;
+				border-radius: 3px;
+				white-space: nowrap;
+				line-height: 1;
+			}
+
+			.ev-cat--hero {
+				color: #ffcc66;
+				background: #3d2a10;
+			}
+			.ev-cat--game {
+				color: #66eedd;
+				background: #0e2e28;
+			}
+			.ev-cat--kill {
+				color: #ff8877;
+				background: #301814;
+			}
+			.ev-cat--item {
+				color: #ccaaff;
+				background: #241a38;
+			}
+
+			/* ── Column 3: Description zone ── */
+			.ev-col-desc {
+				padding: 10px 12px;
+				border-right: 1px solid var(--border);
+				height: 100%;
+				display: flex;
+				align-items: center;
+			}
+
+			.ev-row-desc {
+				font-size: 0.72rem;
+				font-family: var(--mono);
+				color: var(--teal);
+				opacity: 0.7;
+				line-height: 1.5;
+			}
+
+			.ev-row--unmapped .ev-row-desc {
+				color: var(--slate);
+				opacity: 0.5;
+			}
+
+			/* ── Column 4: Status zone ── */
+			.ev-col-status {
+				padding: 10px 8px;
+				border-right: 1px solid var(--border);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+			}
+
+			.ev-row--mapped .ev-col-status {
+				background: #0e1610;
+			}
+
+			.ev-status {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 0.6rem;
+				font-family: var(--mono);
+				letter-spacing: 0.5px;
+				text-transform: uppercase;
+				white-space: nowrap;
+				flex-shrink: 0;
+			}
+
+			.ev-status--mapped {
+				color: var(--green);
+			}
+			.ev-status--unmapped {
+				color: var(--slate-dim);
+			}
+
+			.ev-status-dot {
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+			}
+
+			.ev-status--mapped .ev-status-dot {
+				background: var(--green);
+				box-shadow: 0 0 6px #5cd87a50;
+				animation: dot-pulse 2s ease infinite;
+			}
+
+			.ev-status--unmapped .ev-status-dot {
+				background: var(--slate-dim);
+				opacity: 0.5;
+			}
+
+			/* ── Column 5: Assignment zone ── */
+			.ev-col-assign {
+				padding: 10px 12px;
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				height: 100%;
+				min-width: 0;
+			}
+
+			.ev-row--mapped .ev-col-assign {
+				background: #0e1610;
+			}
+
+			.ev-assign-label {
+				font-size: 0.55rem;
+				font-family: var(--mono);
+				text-transform: uppercase;
+				letter-spacing: 1.5px;
+				color: var(--text-dim);
+				white-space: nowrap;
+				flex-shrink: 0;
+			}
+
+			.ev-row--mapped .ev-assign-label {
+				color: var(--green-dim);
+			}
+
+			/* ── Custom <select> ── */
+			.ev-sound-select {
+				flex: 1;
+				font-family: var(--mono);
+				font-size: 0.72rem;
+				padding: 6px 28px 6px 10px;
+				background: var(--bg);
+				border: 1px solid var(--border);
+				color: var(--text-sec);
+				outline: none;
+				cursor: pointer;
+				transition: all 0.15s;
+				appearance: none;
+				-webkit-appearance: none;
+				border-radius: 3px;
+				min-width: 0;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235e5444' stroke-width='1.2'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 10px center;
+			}
+
+			.ev-sound-select:hover {
+				border-color: var(--border-hi);
+				color: var(--text);
+			}
+
+			.ev-sound-select:focus {
+				border-color: var(--amber-dim);
+				box-shadow: 0 0 0 1px var(--amber-dark);
+			}
+
+			.ev-sound-select--active {
+				color: var(--amber-bright);
+				border-color: var(--green-dim);
+				background-color: #0e1610;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%232a6e3a' stroke-width='1.2'/%3E%3C/svg%3E");
+			}
+
+			.ev-clear-btn {
+				font-family: var(--mono);
+				font-size: 0.6rem;
+				color: var(--text-dim);
+				background: none;
+				border: 1px solid var(--border);
+				border-radius: 3px;
+				cursor: pointer;
+				padding: 5px 10px;
+				transition: all 0.15s;
+				white-space: nowrap;
+				flex-shrink: 0;
+				letter-spacing: 0.5px;
+			}
+
+			.ev-clear-btn:hover {
+				color: var(--red-bright);
+				border-color: var(--red);
+				background: var(--red-dim);
+			}
+
+			@keyframes dot-pulse {
+				0%,
+				100% {
+					opacity: 1;
+					box-shadow: 0 0 6px #5cd87a50;
+				}
+				50% {
+					opacity: 0.5;
+					box-shadow: 0 0 3px #5cd87a30;
+				}
+			}
+
+			/* ── Events column header row ── */
+			.ev-header {
+				display: grid;
+				grid-template-columns: 2fr 60px 3fr 70px 2.5fr;
+				gap: 0;
+				padding: 0;
+				padding-left: 4px; /* match ev-row border-left width */
+				border-bottom: 1px solid var(--border);
+				background: var(--bg);
+				position: sticky;
+				top: 0;
+				z-index: 1;
+			}
+
+			.ev-header-cell {
+				padding: 8px 12px;
+				font-size: 0.5rem;
+				font-family: var(--mono);
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				color: var(--text-muted);
+				border-right: 1px solid var(--border);
+			}
+
+			.ev-header-cell:last-child {
+				border-right: none;
+			}
+			.ev-header-cell--cat {
+				padding: 8px 8px;
+			}
+			.ev-header-cell--desc {
+				padding: 8px 12px;
+			}
+			.ev-header-cell--status {
+				padding: 8px 8px;
+				text-align: center;
+			}
+			.ev-header-cell--assign {
+				padding: 8px 12px;
+			}
+
+			/* ═══════════════════════════
+       CONFIG ACCORDION
+    ═══════════════════════════ */
+			.config-section {
+				border-top: 1px solid var(--border);
+				background: var(--bg-raised);
+				flex-shrink: 0;
+			}
+
+			.config-bar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 10px 28px;
+				border-bottom: 1px solid var(--border);
+				cursor: pointer;
+				transition: background 0.15s;
+				user-select: none;
+			}
+
+			.config-bar:hover {
+				background: var(--amber-dark);
+			}
+
+			.config-bar-label {
+				font-size: 0.65rem;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				color: var(--text-dim);
+			}
+
+			.config-bar-right {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+
+			.config-bar-endpoint {
+				font-size: 0.7rem;
+				color: var(--teal);
+			}
+
+			.config-bar-toggle {
+				font-size: 0.7rem;
+				color: var(--text-dim);
+				transition: transform 0.25s;
+			}
+
+			.config-bar-toggle.open {
+				transform: rotate(180deg);
+			}
+
+			.config-body {
+				display: none;
+				padding: 16px 28px;
+				max-height: 280px;
+				overflow-y: auto;
+				border-top: 1px solid var(--border);
+			}
+
+			.config-body.open {
+				display: block;
+				animation: fadeIn 0.2s ease;
+			}
+
+			.config-json {
+				font-family: var(--mono);
+				font-size: 0.72rem;
+				line-height: 1.7;
+				color: var(--text);
+				white-space: pre-wrap;
+				background: var(--bg-input);
+				padding: 14px 16px;
+				border: 1px solid var(--border);
+			}
+
+			/* ═══════════════════════════
+       RESPONSIVE
+    ═══════════════════════════ */
+			@media (max-width: 1200px) {
+				.ev-row {
+					grid-template-columns: 1.5fr 50px 2fr 60px 2fr;
+				}
+				.ev-header {
+					grid-template-columns: 1.5fr 50px 2fr 60px 2fr;
+				}
+			}
+
+			@media (max-width: 900px) {
+				.split {
+					grid-template-columns: 1fr;
+				}
+				.sounds-panel {
+					border-right: none;
+					border-bottom: 1px solid var(--border);
+					max-height: 40vh;
+				}
+				.stats-bar {
+					grid-template-columns: repeat(3, 1fr);
+				}
+				.stats-bar .stat-cell:nth-child(4),
+				.stats-bar .stat-cell:nth-child(5) {
+					border-top: 1px solid var(--border);
+				}
+
+				.ev-header {
+					display: none;
+				}
+
+				.ev-row {
+					grid-template-columns: 1fr;
+					grid-template-rows: auto;
+					padding: 0;
+				}
+
+				.ev-col-name,
+				.ev-col-cat,
+				.ev-col-desc,
+				.ev-col-status,
+				.ev-col-assign {
+					border-right: none;
+					border-bottom: 1px solid var(--border);
+					padding: 10px 14px;
+				}
+
+				.ev-col-assign {
+					border-bottom: none;
+				}
+
+				.ev-col-cat {
+					justify-content: flex-start;
+				}
+				.ev-col-status {
+					justify-content: flex-start;
+				}
+
+				.ev-sound-select {
+					font-size: 0.7rem;
+					padding: 5px 24px 5px 8px;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<!-- ════ HEADER ════ -->
+		<div class="header">
+			<div class="header-left">
+				<div class="header-logo">
+					ANNOYINGNOISES<span class="header-cursor"></span>
+				</div>
+				<span class="header-tag">v0.1.0 // GSI SOUND REGISTRY</span>
+			</div>
+			<div class="header-right">
+				<button class="cmd-btn cmd-btn--teal" id="btnExport"
+					>[export config]</button
+				>
+				<button class="cmd-btn" id="btnSave">[save]</button>
+			</div>
+		</div>
+
+		<!-- ════ STATS ════ -->
+		<div class="stats-bar">
+			<div class="stat-cell">
+				<div class="stat-cell-label">total clips</div>
+				<div
+					class="stat-cell-value stat-cell-value--amber"
+					id="statTotal"
+				>
+					12
+				</div>
+				<div class="stat-cell-sub">loaded in registry</div>
+			</div>
+			<div class="stat-cell">
+				<div class="stat-cell-label">assigned</div>
+				<div
+					class="stat-cell-value stat-cell-value--orange"
+					id="statAssigned"
+				>
+					4
+				</div>
+				<div class="stat-cell-sub">events have sounds</div>
+			</div>
+			<div class="stat-cell">
+				<div class="stat-cell-label">unassigned</div>
+				<div
+					class="stat-cell-value stat-cell-value--red"
+					id="statUnassigned"
+				>
+					8
+				</div>
+				<div class="stat-cell-sub">clips available</div>
+			</div>
+			<div class="stat-cell">
+				<div class="stat-cell-label">gsi events</div>
+				<div
+					class="stat-cell-value stat-cell-value--teal"
+					id="statEvCount"
+				>
+					10
+				</div>
+				<div class="stat-cell-sub">trackable events</div>
+			</div>
+			<div class="stat-cell">
+				<div class="stat-cell-label">most assigned</div>
+				<div class="mini-leader" id="miniLeader"></div>
+			</div>
+		</div>
+
+		<!-- ════ SPLIT ════ -->
+		<div class="split">
+			<!-- LEFT: SOUNDS -->
+			<div class="sounds-panel">
+				<div class="panel-bar">
+					<span class="panel-bar-title">Sound Library</span>
+					<span class="panel-bar-count" id="libCount">12 files</span>
+				</div>
+				<div class="upload-strip">
+					<div class="upload-drop" id="uploadDrop">
+						<div class="upload-prompt">
+							drop audio files or <b>browse</b>
+						</div>
+						<input
+							type="file"
+							id="fileInput"
+							accept="audio/*"
+							multiple
+							hidden
+						/>
+					</div>
+				</div>
+				<div class="search-strip">
+					<input
+						class="search-input"
+						type="text"
+						placeholder="$ grep ..."
+						id="searchInput"
+					/>
+				</div>
+				<div class="sound-scroll">
+					<div id="soundList"></div>
+				</div>
+			</div>
+
+			<!-- RIGHT: EVENTS -->
+			<div class="events-panel">
+				<div class="panel-bar">
+					<span class="panel-bar-title">GSI Events</span>
+					<span class="panel-bar-count" id="evCount">10 events</span>
+				</div>
+				<div class="events-scroll">
+					<div class="ev-header">
+						<div class="ev-header-cell">event</div>
+						<div class="ev-header-cell ev-header-cell--cat">
+							type
+						</div>
+						<div class="ev-header-cell ev-header-cell--desc">
+							description
+						</div>
+						<div class="ev-header-cell ev-header-cell--status">
+							status
+						</div>
+						<div class="ev-header-cell ev-header-cell--assign">
+							assignment
+						</div>
+					</div>
+					<div class="events-list" id="eventsList"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ════ CONFIG ACCORDION ════ -->
+		<div class="config-section">
+			<div class="config-bar" id="configBar">
+				<span class="config-bar-label">Configuration Output</span>
+				<div class="config-bar-right">
+					<span class="config-bar-endpoint">/api/config.json</span>
+					<span class="config-bar-toggle" id="configToggleIcon"
+						>&#9660;</span
+					>
+				</div>
+			</div>
+			<div class="config-body" id="configBody">
+				<div class="config-json" id="configJson"></div>
+			</div>
+		</div>
+
+		<script>
+			// ═══════ MOCK DATA ═══════
+			const SOUNDS = [
+				{
+					id: "s1",
+					name: "airhorn.mp3",
+					size: "245 KB",
+					duration: "2.1s",
+				},
+				{
+					id: "s2",
+					name: "sad_trombone.mp3",
+					size: "312 KB",
+					duration: "3.4s",
+				},
+				{
+					id: "s3",
+					name: "victory_fanfare.mp3",
+					size: "580 KB",
+					duration: "5.2s",
+				},
+				{
+					id: "s4",
+					name: "gg_wp.mp3",
+					size: "128 KB",
+					duration: "1.8s",
+				},
+				{
+					id: "s5",
+					name: "first_blood.mp3",
+					size: "410 KB",
+					duration: "4.0s",
+				},
+				{
+					id: "s6",
+					name: "denied.mp3",
+					size: "89 KB",
+					duration: "0.9s",
+				},
+				{
+					id: "s7",
+					name: "aegis_snatch.mp3",
+					size: "290 KB",
+					duration: "2.8s",
+				},
+				{
+					id: "s8",
+					name: "rampage.mp3",
+					size: "620 KB",
+					duration: "6.1s",
+				},
+				{
+					id: "s9",
+					name: "rune_pickup.mp3",
+					size: "156 KB",
+					duration: "1.2s",
+				},
+				{
+					id: "s10",
+					name: "tower_fall.mp3",
+					size: "340 KB",
+					duration: "3.7s",
+				},
+				{
+					id: "s11",
+					name: "buyback.mp3",
+					size: "200 KB",
+					duration: "2.0s",
+				},
+				{
+					id: "s12",
+					name: "courier_dead.mp3",
+					size: "175 KB",
+					duration: "1.5s",
+				},
+			];
+
+			const GSI_EVENTS = [
+				{
+					id: "e1",
+					name: "hero_respawned",
+					cat: "hero",
+					desc: "Fires when the player's hero respawns after death.",
+				},
+				{
+					id: "e2",
+					name: "hero_killed",
+					cat: "kill",
+					desc: "Fires when the player's hero is killed by an enemy.",
+				},
+				{
+					id: "e3",
+					name: "hero_leveled_up",
+					cat: "hero",
+					desc: "Fires when the hero gains a new level.",
+				},
+				{
+					id: "e4",
+					name: "game_started",
+					cat: "game",
+					desc: "Fires when the match begins (horn sounds).",
+				},
+				{
+					id: "e5",
+					name: "game_ended",
+					cat: "game",
+					desc: "Fires when the ancient is destroyed and the match ends.",
+				},
+				{
+					id: "e6",
+					name: "kill_streak",
+					cat: "kill",
+					desc: "Fires on multi-kill streaks (double, triple, ultra, rampage).",
+				},
+				{
+					id: "e7",
+					name: "first_blood",
+					cat: "kill",
+					desc: "Fires on the first hero kill of the match.",
+				},
+				{
+					id: "e8",
+					name: "item_purchased",
+					cat: "item",
+					desc: "Fires when the player purchases an item from the shop.",
+				},
+				{
+					id: "e9",
+					name: "roshan_killed",
+					cat: "game",
+					desc: "Fires when Roshan is slain by either team.",
+				},
+				{
+					id: "e10",
+					name: "tower_destroyed",
+					cat: "game",
+					desc: "Fires when any tower is destroyed.",
+				},
+			];
+
+			let assignments = { e1: "s1", e2: "s2", e6: "s8", e7: "s5" };
+			let searchQuery = "";
+			let playingId = null;
+
+			function assignedIds() {
+				return new Set(Object.values(assignments));
+			}
+
+			function $(id) {
+				return document.getElementById(id);
+			}
+
+			// ═══════ RENDER ═══════
+			function renderSounds() {
+				const wrap = $("soundList");
+				if (!wrap) return;
+				const usedIds = assignedIds();
+				const filtered = SOUNDS.filter((s) =>
+					s.name.toLowerCase().includes(searchQuery.toLowerCase()),
+				);
+
+				// Count how many events each sound is assigned to
+				const useCounts = {};
+				for (const sid of Object.values(assignments))
+					useCounts[sid] = (useCounts[sid] || 0) + 1;
+
+				wrap.innerHTML = filtered
+					.map((s) => {
+						const used = usedIds.has(s.id);
+						const count = useCounts[s.id] || 0;
+						return `
+        <div class="sound-row ${used ? "in-use" : ""}" data-sid="${s.id}">
+          <button class="sound-row-play ${playingId === s.id ? "on" : ""}" data-sid="${s.id}">
+            ${playingId === s.id ? "\u25A0" : "\u25B6"}
+          </button>
+          <div class="sound-row-info">
+            <div class="sound-row-name">${s.name}</div>
+            <div class="sound-row-meta">${s.size} // ${s.duration}</div>
+          </div>
+          ${
+				count > 0
+					? `<span class="sound-row-badge sound-row-badge--active">${count} event${count > 1 ? "s" : ""}</span>`
+					: `<span class="sound-row-badge">unused</span>`
+			}
+        </div>
+      `;
+					})
+					.join("");
+
+				wrap.querySelectorAll(".sound-row-play").forEach((btn) => {
+					btn.addEventListener("click", (e) => {
+						e.stopPropagation();
+						const sid = btn.dataset.sid;
+						playingId = playingId === sid ? null : sid;
+						if (playingId)
+							setTimeout(() => {
+								playingId = null;
+								renderSounds();
+							}, 2000);
+						renderSounds();
+					});
+				});
+			}
+
+			function renderEvents() {
+				const list = $("eventsList");
+				if (!list) return;
+				const events = GSI_EVENTS;
+
+				list.innerHTML = events
+					.map((ev) => {
+						const sid = assignments[ev.id];
+						const isMapped = !!sid;
+						const rowClass = isMapped
+							? "ev-row--mapped"
+							: "ev-row--unmapped";
+
+						// Build <option> list
+						const opts = SOUNDS.map(
+							(s) =>
+								`<option value="${s.id}" ${s.id === sid ? "selected" : ""}>${s.name}</option>`,
+						).join("");
+
+						// Status indicator
+						const statusHtml = isMapped
+							? `<span class="ev-status ev-status--mapped"><span class="ev-status-dot"></span>active</span>`
+							: `<span class="ev-status ev-status--unmapped"><span class="ev-status-dot"></span>none</span>`;
+
+						return `
+        <div class="ev-row ${rowClass}" data-eid="${ev.id}" data-cat="${ev.cat}">
+          <div class="ev-col-name">
+            <span class="ev-row-name">${ev.name}</span>
+            <span class="ev-row-id">${ev.id}</span>
+          </div>
+          <div class="ev-col-cat">
+            <span class="ev-cat ev-cat--${ev.cat}">${ev.cat}</span>
+          </div>
+          <div class="ev-col-desc">
+            <span class="ev-row-desc">${ev.desc}</span>
+          </div>
+          <div class="ev-col-status">
+            ${statusHtml}
+          </div>
+          <div class="ev-col-assign">
+            <span class="ev-assign-label">${isMapped ? "sound:" : "assign:"}</span>
+            <select class="ev-sound-select ${isMapped ? "ev-sound-select--active" : ""}" data-eid="${ev.id}">
+              <option value="">-- none --</option>
+              ${opts}
+            </select>
+            ${isMapped ? `<button class="ev-clear-btn" data-eid="${ev.id}">clear</button>` : ""}
+          </div>
+        </div>
+      `;
+					})
+					.join("");
+
+				// Select change handler
+				list.querySelectorAll(".ev-sound-select").forEach((sel) => {
+					sel.addEventListener("change", (e) => {
+						const eid = sel.dataset.eid;
+						const val = sel.value;
+						if (val) {
+							assignments[eid] = val;
+						} else {
+							delete assignments[eid];
+						}
+						renderAll();
+					});
+				});
+
+				// Clear button handler
+				list.querySelectorAll(".ev-clear-btn").forEach((btn) => {
+					btn.addEventListener("click", () => {
+						delete assignments[btn.dataset.eid];
+						renderAll();
+					});
+				});
+			}
+
+			function renderStats() {
+				const assigned = Object.keys(assignments).length;
+				const uniqueAssigned = new Set(Object.values(assignments)).size;
+				const el = (id) => document.getElementById(id);
+
+				const statTotal = el("statTotal");
+				const statAssigned = el("statAssigned");
+				const statUnassigned = el("statUnassigned");
+				const statEvCount = el("statEvCount");
+				const libCount = el("libCount");
+
+				if (statTotal) statTotal.textContent = String(SOUNDS.length);
+				if (statAssigned) statAssigned.textContent = String(assigned);
+				if (statUnassigned)
+					statUnassigned.textContent = String(
+						SOUNDS.length - uniqueAssigned,
+					);
+				if (statEvCount)
+					statEvCount.textContent = String(GSI_EVENTS.length);
+				if (libCount) libCount.textContent = SOUNDS.length + " files";
+				const evCountEl = el("evCount");
+				if (evCountEl)
+					evCountEl.textContent = GSI_EVENTS.length + " events";
+
+				// leaderboard
+				const counts = {};
+				for (const sid of Object.values(assignments))
+					counts[sid] = (counts[sid] || 0) + 1;
+				const sorted = Object.entries(counts)
+					.sort((a, b) => Number(b[1]) - Number(a[1]))
+					.slice(0, 3);
+				const maxC = sorted[0] ? Number(sorted[0][1]) : 1;
+
+				const leader = el("miniLeader");
+				if (leader) {
+					leader.innerHTML = sorted
+						.map(([sid, count], i) => {
+							const sound = SOUNDS.find((s) => s.id === sid);
+							const pct = (Number(count) / maxC) * 100;
+							return `
+          <div class="mini-leader-row">
+            <span class="mini-leader-rank">${i + 1}</span>
+            <span class="mini-leader-name">${sound ? sound.name : sid}</span>
+            <div class="mini-leader-bar"><div class="mini-leader-fill" style="width:${pct}%"></div></div>
+            <span class="mini-leader-count">${count}x</span>
+          </div>
+        `;
+						})
+						.join("");
+				}
+
+				// config json
+				const config = {};
+				for (const [eid, sid] of Object.entries(assignments)) {
+					const ev = GSI_EVENTS.find((e) => e.id === eid);
+					const sound = SOUNDS.find((s) => s.id === sid);
+					if (ev && sound) config[ev.name] = sound.name;
+				}
+				const configEl = el("configJson");
+				if (configEl)
+					configEl.textContent = JSON.stringify(config, null, 2);
+			}
+
+			function renderAll() {
+				renderSounds();
+				renderEvents();
+				renderStats();
+			}
+
+			// ═══════ EVENT HANDLERS ═══════
+			const searchEl = $("searchInput");
+			if (searchEl) {
+				searchEl.addEventListener("input", (e) => {
+					searchQuery = e.target.value;
+					renderSounds();
+				});
+			}
+
+			// (filter tabs removed)
+
+			// upload zone
+			const dropEl = $("uploadDrop");
+			const fileEl = $("fileInput");
+			if (dropEl && fileEl) {
+				dropEl.addEventListener("click", () => fileEl.click());
+				dropEl.addEventListener("dragover", (e) => {
+					e.preventDefault();
+					dropEl.classList.add("dragging");
+				});
+				dropEl.addEventListener("dragleave", () =>
+					dropEl.classList.remove("dragging"),
+				);
+				dropEl.addEventListener("drop", (e) => {
+					e.preventDefault();
+					dropEl.classList.remove("dragging");
+				});
+			}
+
+			// config accordion toggle
+			const configBar = $("configBar");
+			if (configBar) {
+				configBar.addEventListener("click", () => {
+					const body = $("configBody");
+					const icon = $("configToggleIcon");
+					if (body) body.classList.toggle("open");
+					if (icon) icon.classList.toggle("open");
+				});
+			}
+
+			renderAll();
+		</script>
+	</body>
+</html>

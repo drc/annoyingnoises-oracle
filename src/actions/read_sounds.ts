@@ -3,15 +3,9 @@ import { ActionError, defineAction } from "astro:actions";
 export const readSounds = {
 	listAll: defineAction({
 		accept: "json",
-		handler: async (_, ctx) => {
+		handler: async (_, _ctx) => {
 			try {
-				const runtime = ctx.locals.runtime;
-
-				const list = await runtime.env.BUCKET.list({
-					prefix: "dota/",
-				});
-
-				return list as R2Objects;
+				return { data: { objects: [] } };
 			} catch (error) {
 				console.error("Error in readSounds.listAll:", error);
 				throw new ActionError({

@@ -1,8 +1,7 @@
 ---
-import type { SafeResult } from "astro:actions";
 import Sound from "./Sound.astro";
 
-const sounds: SafeResult<never, R2Objects> = Astro.props.sounds;
+const sounds = Astro.props.sounds;
 ---
 
 <ul>
@@ -17,20 +16,3 @@ const sounds: SafeResult<never, R2Objects> = Astro.props.sounds;
     }
 </ul>
 
-<style>
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.5rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
-        border: 1px solid rgba(194, 169, 112, 0.1);
-    }
-</style>

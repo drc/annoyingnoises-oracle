@@ -3,13 +3,12 @@ import { actions } from "astro:actions";
 import Layout from "@/components/Layout.astro";
 import SoundList from "@/components/SoundList.astro";
 
-const sounds = await Astro.callAction(actions.readSounds.listAll, {});
+const sounds = []; //await Astro.callAction(actions.readSounds.listAll, {});
 ---
 
 <Layout title="Home">
 	<div class="index-header">
 		<h1>Home</h1>
-		<a href="/upload" class="upload-button">Upload Sound</a>
 	</div>
 
 	<main>
@@ -18,40 +17,3 @@ const sounds = await Astro.callAction(actions.readSounds.listAll, {});
 	</main>
 </Layout>
 
-<style>
-	.index-header {
-		position: relative;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		margin-bottom: 2rem;
-		padding-bottom: 1rem;
-		border-bottom: var(--dota-border);
-	}
-
-	.index-header h1 {
-		margin: 0;
-		font-size: 2.5rem;
-		color: var(--dota-gold);
-	}
-
-	.upload-button {
-		position: absolute;
-		right: 0;
-		background: var(--dota-dark-red);
-		border: var(--dota-border);
-		color: var(--dota-gold);
-		padding: 0.5rem 1rem;
-		text-decoration: none;
-		font-size: 0.8rem;
-		border-radius: 2px;
-		transition: all 0.2s;
-		text-transform: uppercase;
-		letter-spacing: 1px;
-	}
-
-	.upload-button:hover {
-		background: var(--dota-red);
-		box-shadow: 0 0 10px rgba(187, 51, 34, 0.3);
-	}
-</style>

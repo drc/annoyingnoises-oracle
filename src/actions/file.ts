@@ -7,15 +7,12 @@ export const file = {
 		input: z.object({
 			file: z.instanceof(File),
 		}),
-		handler: async ({ file }, ctx) => {
+		handler: async ({ file }, _ctx) => {
 			try {
-				const runtime = ctx.locals.runtime;
 
-				const resp = await runtime.env.BUCKET.put(
-					`dota/${file.name}`,
-					await file.arrayBuffer(),
-				);
-				console.log(resp?.uploaded);
+				/**
+				 * change this to use s3api instead of r2 bindings
+				 */
 				return {
 					success: true,
 					message: `Sound uploaded to ${file.name}`,

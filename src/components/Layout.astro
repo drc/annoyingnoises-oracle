@@ -1,25 +1,31 @@
 ---
-const title = Astro.props.title || "Home";
+/**
+ * ANNOYINGNOISES — Warm Phosphor
+ * CRT-inspired terminal aesthetic with warm amber/orange phosphor glow,
+ * teal accents, scan-line overlay, and a single-page dashboard layout.
+ */
+import GlobalStyles from "./GlobalStyles.astro";
+
+const { title = "ANNOYINGNOISES :: GSI Sound Registry" } = Astro.props;
 ---
 
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <meta name="viewport" content="width=device-width" />
-        <meta name="generator" content={Astro.generator} />
-        <title>annoyingnoises-oracle - {title}</title>
-    </head>
-    <body>
-        <div class="dota-bg"></div>
-        <div class="dota-container">
-            <header>
-                <div class="logo">ANNOYINGNOISES</div>
-            </header>
-            <main>
-                <slot />
-            </main>
-        </div>
-    </body>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+        <GlobalStyles />
+	</head>
+
+	<body>
+		<slot />
+	</body>
 </html>
 

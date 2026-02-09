@@ -1,0 +1,85 @@
+---
+
+---
+
+<style is:global>
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    :root {
+        /* ── Warm phosphor palette ── */
+        --bg: #0c0a08;
+        --bg-raised: #141210;
+        --bg-input: #100e0c;
+        --border: #2a2318;
+        --border-hi: #3d3325;
+
+        /* ── Primary: amber/orange family ── */
+        --amber: #f0a030;
+        --amber-bright: #ffbe44;
+        --amber-dim: #8a6520;
+        --amber-glow: #f0a03025;
+        --amber-dark: #1a1408;
+        --orange: #e07828;
+
+        /* ── Accent: teal ── */
+        --teal: #3cc8b4;
+        --teal-dim: #1a6a5e;
+        --teal-glow: #3cc8b420;
+        --teal-dark: #0a1e1a;
+
+        /* ── Status: green for mapped/active ── */
+        --green: #5cd87a;
+        --green-dim: #2a6e3a;
+        --green-dark: #0e1e12;
+
+        /* ── Danger: red ── */
+        --red: #e05040;
+        --red-bright: #ff6b5a;
+        --red-dim: #3a1510;
+
+        /* ── Accent: lavender for items ── */
+        --lavender: #b098e0;
+        --lavender-dim: #5a4880;
+
+        /* ── Neutral: slate for muted/inactive states ── */
+        --slate: #7a8a9a;
+        --slate-dim: #4a5562;
+        --slate-dark: #141820;
+        --slate-border: #2a3040;
+
+        /* ── Text hierarchy ── */
+        --text-title: #f0ebe4;
+        --text: #a89880;
+        --text-sec: #887868;
+        --text-dim: #5e5444;
+        --text-muted: #3e3830;
+
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "Space Grotesk", sans-serif;
+    }
+
+    html {
+        font-size: 13px;
+    }
+
+    html,
+    body {
+        height: 100%;
+    }
+
+    body {
+        font-family: var(--mono);
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+</style>

@@ -3,45 +3,76 @@
  * StatsBar component for ANNOYINGNOISES
  * Displays statistics: total clips, assigned, unassigned, GSI events, and leaderboard
  */
+import StatsBarStyles from "./styles/StatsBarStyles.astro";
+
+const { sounds = [], events = [], assignments = {} } = Astro.props;
+
+const assignedCount = Object.keys(assignments).length;
+const uniqueAssigned = new Set(Object.values(assignments)).size;
+const unassignedCount = Math.max(0, sounds.length - uniqueAssigned);
+
+const counts = Object.values(assignments).reduce((acc, sid) => {
+    acc[sid] = (acc[sid] || 0) + 1;
+    return acc;
+}, {});
+
+const leaders = Object.entries(counts)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, 3);
+const maxC = leaders[0] ? Number(leaders[0][1]) : 1;
+
 ---
 
+<StatsBarStyles />
+
 <div class="stats-bar">
-	<div class="stat-cell">
-		<div class="stat-cell-label">total clips</div>
-		<div class="stat-cell-value stat-cell-value--amber" id="statTotal">
-			12
-		</div>
-		<div class="stat-cell-sub">loaded in registry</div>
-	</div>
-	<div class="stat-cell">
-		<div class="stat-cell-label">assigned</div>
-		<div
-			class="stat-cell-value stat-cell-value--orange"
-			id="statAssigned"
-		>
-			4
-		</div>
-		<div class="stat-cell-sub">events have sounds</div>
-	</div>
-	<div class="stat-cell">
-		<div class="stat-cell-label">unassigned</div>
-		<div
-			class="stat-cell-value stat-cell-value--red"
-			id="statUnassigned"
-		>
-			8
-		</div>
-		<div class="stat-cell-sub">clips available</div>
-	</div>
-	<div class="stat-cell">
-		<div class="stat-cell-label">gsi events</div>
-		<div class="stat-cell-value stat-cell-value--teal" id="statEvCount">
-			10
-		</div>
-		<div class="stat-cell-sub">trackable events</div>
-	</div>
-	<div class="stat-cell">
-		<div class="stat-cell-label">most assigned</div>
-		<div class="mini-leader" id="miniLeader"></div>
-	</div>
+    <div class="stat-cell">
+        <div class="stat-cell-label">total clips</div>
+        <div class="stat-cell-value stat-cell-value--amber" id="statTotal">
+            {sounds.length}
+        </div>
+        <div class="stat-cell-sub">loaded in registry</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-label">assigned</div>
+        <div class="stat-cell-value stat-cell-value--orange" id="statAssigned">
+            {assignedCount}
+        </div>
+        <div class="stat-cell-sub">events have sounds</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-label">unassigned</div>
+        <div class="stat-cell-value stat-cell-value--red" id="statUnassigned">
+            {unassignedCount}
+        </div>
+        <div class="stat-cell-sub">clips available</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-label">gsi events</div>
+        <div class="stat-cell-value stat-cell-value--teal" id="statEvCount">
+            {events.length}
+        </div>
+        <div class="stat-cell-sub">trackable events</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-label">most assigned</div>
+        <div class="mini-leader" id="miniLeader">
+            {
+                leaders.map(([sid, count], i) => {
+                    const sound = sounds.find((s) => s.id === sid);
+                    const pct = (Number(count) / maxC) * 100;
+                    return (
+                        <div class="mini-leader-row">
+                            <span class="mini-leader-rank">{i + 1}</span>
+                            <span class="mini-leader-name">{sound ? sound.name : sid}</span>
+                            <div class="mini-leader-bar">
+                                <div class="mini-leader-fill" style={`width:${pct}%`}></div>
+                            </div>
+                            <span class="mini-leader-count">{count}x</span>
+                        </div>
+                    );
+                })
+            }
+        </div>
+    </div>
 </div>

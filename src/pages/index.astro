@@ -5,9 +5,151 @@
  * teal accents, scan-line overlay, and a single-page dashboard layout.
  * Sections: header > stats bar > split (sounds | events) > config accordion.
  */
-import Header from "../components/Header.astro";
-import Layout from "../components/Layout.astro";
-import StatsBar from "../components/StatsBar.astro";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import Layout from "@/components/Layout.astro";
+import Split from "@/components/Split.astro";
+import StatsBar from "@/components/StatsBar.astro";
+
+const SOUNDS = [
+	{
+		id: "s1",
+		name: "airhorn.mp3",
+		size: "245 KB",
+		duration: "2.1s",
+	},
+	{
+		id: "s2",
+		name: "sad_trombone.mp3",
+		size: "312 KB",
+		duration: "3.4s",
+	},
+	{
+		id: "s3",
+		name: "victory_fanfare.mp3",
+		size: "580 KB",
+		duration: "5.2s",
+	},
+	{
+		id: "s4",
+		name: "gg_wp.mp3",
+		size: "128 KB",
+		duration: "1.8s",
+	},
+	{
+		id: "s5",
+		name: "first_blood.mp3",
+		size: "410 KB",
+		duration: "4.0s",
+	},
+	{
+		id: "s6",
+		name: "denied.mp3",
+		size: "89 KB",
+		duration: "0.9s",
+	},
+	{
+		id: "s7",
+		name: "aegis_snatch.mp3",
+		size: "290 KB",
+		duration: "2.8s",
+	},
+	{
+		id: "s8",
+		name: "rampage.mp3",
+		size: "620 KB",
+		duration: "6.1s",
+	},
+	{
+		id: "s9",
+		name: "rune_pickup.mp3",
+		size: "156 KB",
+		duration: "1.2s",
+	},
+	{
+		id: "s10",
+		name: "tower_fall.mp3",
+		size: "340 KB",
+		duration: "3.7s",
+	},
+	{
+		id: "s11",
+		name: "buyback.mp3",
+		size: "200 KB",
+		duration: "2.0s",
+	},
+	{
+		id: "s12",
+		name: "courier_dead.mp3",
+		size: "175 KB",
+		duration: "1.5s",
+	},
+];
+
+const GSI_EVENTS = [
+	{
+		id: "e1",
+		name: "hero_respawned",
+		cat: "hero",
+		desc: "Fires when the player's hero respawns after death.",
+	},
+	{
+		id: "e2",
+		name: "hero_killed",
+		cat: "kill",
+		desc: "Fires when the player's hero is killed by an enemy.",
+	},
+	{
+		id: "e3",
+		name: "hero_leveled_up",
+		cat: "hero",
+		desc: "Fires when the hero gains a new level.",
+	},
+	{
+		id: "e4",
+		name: "game_started",
+		cat: "game",
+		desc: "Fires when the match begins (horn sounds).",
+	},
+	{
+		id: "e5",
+		name: "game_ended",
+		cat: "game",
+		desc: "Fires when the ancient is destroyed and the match ends.",
+	},
+	{
+		id: "e6",
+		name: "kill_streak",
+		cat: "kill",
+		desc: "Fires on multi-kill streaks (double, triple, ultra, rampage).",
+	},
+	{
+		id: "e7",
+		name: "first_blood",
+		cat: "kill",
+		desc: "Fires on the first hero kill of the match.",
+	},
+	{
+		id: "e8",
+		name: "item_purchased",
+		cat: "item",
+		desc: "Fires when the player purchases an item from the shop.",
+	},
+	{
+		id: "e9",
+		name: "roshan_killed",
+		cat: "game",
+		desc: "Fires when Roshan is slain by either team.",
+	},
+	{
+		id: "e10",
+		name: "tower_destroyed",
+		cat: "game",
+		desc: "Fires when any tower is destroyed.",
+	},
+];
+
+const assignments = { e1: "s1", e2: "s2", e6: "s8", e7: "s5" };
 ---
 
 <Layout>
@@ -15,472 +157,11 @@ import StatsBar from "../components/StatsBar.astro";
 	<Header />
 
 	<!-- ════ STATS ════ -->
-	<StatsBar />
+	<StatsBar sounds={SOUNDS} events={GSI_EVENTS} assignments={assignments} />
 
 	<!-- ════ SPLIT ════ -->
-	<div class="split">
-		<!-- LEFT: SOUNDS -->
-		<div class="sounds-panel">
-			<div class="panel-bar">
-				<span class="panel-bar-title">Sound Library</span>
-				<span class="panel-bar-count" id="libCount">12 files</span>
-			</div>
-			<div class="upload-strip">
-				<div class="upload-drop" id="uploadDrop">
-					<div class="upload-prompt">
-						drop audio files or <b>browse</b>
-					</div>
-					<input
-						type="file"
-						id="fileInput"
-						accept="audio/*"
-						multiple
-						hidden
-					/>
-				</div>
-			</div>
-			<div class="search-strip">
-				<input
-					class="search-input"
-					type="text"
-					placeholder="$ grep ..."
-					id="searchInput"
-				/>
-			</div>
-			<div class="sound-scroll">
-				<div id="soundList"></div>
-			</div>
-		</div>
-
-		<!-- RIGHT: EVENTS -->
-		<div class="events-panel">
-			<div class="panel-bar">
-				<span class="panel-bar-title">GSI Events</span>
-				<span class="panel-bar-count" id="evCount">10 events</span>
-			</div>
-			<div class="events-scroll">
-				<div class="ev-header">
-					<div class="ev-header-cell">event</div>
-					<div class="ev-header-cell ev-header-cell--cat">type</div>
-					<div class="ev-header-cell ev-header-cell--desc">
-						description
-					</div>
-					<div class="ev-header-cell ev-header-cell--status">
-						status
-					</div>
-					<div class="ev-header-cell ev-header-cell--assign">
-						assignment
-					</div>
-				</div>
-				<div class="events-list" id="eventsList"></div>
-			</div>
-		</div>
-	</div>
+	<Split sounds={SOUNDS} events={GSI_EVENTS} assignments={assignments} />
 
 	<!-- ════ CONFIG ACCORDION ════ -->
-	<div class="config-section">
-		<div class="config-bar" id="configBar">
-			<span class="config-bar-label">Configuration Output</span>
-			<div class="config-bar-right">
-				<span class="config-bar-endpoint">/api/config.json</span>
-				<span class="config-bar-toggle" id="configToggleIcon"
-					>&#9660;</span
-				>
-			</div>
-		</div>
-		<div class="config-body" id="configBody">
-			<div class="config-json" id="configJson"></div>
-		</div>
-	</div>
-
-	<script>
-		// ═══════ MOCK DATA ═══════
-		const SOUNDS = [
-			{
-				id: "s1",
-				name: "airhorn.mp3",
-				size: "245 KB",
-				duration: "2.1s",
-			},
-			{
-				id: "s2",
-				name: "sad_trombone.mp3",
-				size: "312 KB",
-				duration: "3.4s",
-			},
-			{
-				id: "s3",
-				name: "victory_fanfare.mp3",
-				size: "580 KB",
-				duration: "5.2s",
-			},
-			{
-				id: "s4",
-				name: "gg_wp.mp3",
-				size: "128 KB",
-				duration: "1.8s",
-			},
-			{
-				id: "s5",
-				name: "first_blood.mp3",
-				size: "410 KB",
-				duration: "4.0s",
-			},
-			{
-				id: "s6",
-				name: "denied.mp3",
-				size: "89 KB",
-				duration: "0.9s",
-			},
-			{
-				id: "s7",
-				name: "aegis_snatch.mp3",
-				size: "290 KB",
-				duration: "2.8s",
-			},
-			{
-				id: "s8",
-				name: "rampage.mp3",
-				size: "620 KB",
-				duration: "6.1s",
-			},
-			{
-				id: "s9",
-				name: "rune_pickup.mp3",
-				size: "156 KB",
-				duration: "1.2s",
-			},
-			{
-				id: "s10",
-				name: "tower_fall.mp3",
-				size: "340 KB",
-				duration: "3.7s",
-			},
-			{
-				id: "s11",
-				name: "buyback.mp3",
-				size: "200 KB",
-				duration: "2.0s",
-			},
-			{
-				id: "s12",
-				name: "courier_dead.mp3",
-				size: "175 KB",
-				duration: "1.5s",
-			},
-		];
-
-		const GSI_EVENTS = [
-			{
-				id: "e1",
-				name: "hero_respawned",
-				cat: "hero",
-				desc: "Fires when the player's hero respawns after death.",
-			},
-			{
-				id: "e2",
-				name: "hero_killed",
-				cat: "kill",
-				desc: "Fires when the player's hero is killed by an enemy.",
-			},
-			{
-				id: "e3",
-				name: "hero_leveled_up",
-				cat: "hero",
-				desc: "Fires when the hero gains a new level.",
-			},
-			{
-				id: "e4",
-				name: "game_started",
-				cat: "game",
-				desc: "Fires when the match begins (horn sounds).",
-			},
-			{
-				id: "e5",
-				name: "game_ended",
-				cat: "game",
-				desc: "Fires when the ancient is destroyed and the match ends.",
-			},
-			{
-				id: "e6",
-				name: "kill_streak",
-				cat: "kill",
-				desc: "Fires on multi-kill streaks (double, triple, ultra, rampage).",
-			},
-			{
-				id: "e7",
-				name: "first_blood",
-				cat: "kill",
-				desc: "Fires on the first hero kill of the match.",
-			},
-			{
-				id: "e8",
-				name: "item_purchased",
-				cat: "item",
-				desc: "Fires when the player purchases an item from the shop.",
-			},
-			{
-				id: "e9",
-				name: "roshan_killed",
-				cat: "game",
-				desc: "Fires when Roshan is slain by either team.",
-			},
-			{
-				id: "e10",
-				name: "tower_destroyed",
-				cat: "game",
-				desc: "Fires when any tower is destroyed.",
-			},
-		];
-
-		let assignments = { e1: "s1", e2: "s2", e6: "s8", e7: "s5" };
-		let searchQuery = "";
-		let playingId = null;
-
-		function assignedIds() {
-			return new Set(Object.values(assignments));
-		}
-
-		function $(id) {
-			return document.getElementById(id);
-		}
-
-		// ═══════ RENDER ═══════
-		function renderSounds() {
-			const wrap = $("soundList");
-			if (!wrap) return;
-			const usedIds = assignedIds();
-			const filtered = SOUNDS.filter((s) =>
-				s.name.toLowerCase().includes(searchQuery.toLowerCase()),
-			);
-
-			// Count how many events each sound is assigned to
-			const useCounts = {};
-			for (const sid of Object.values(assignments))
-				useCounts[sid] = (useCounts[sid] || 0) + 1;
-
-			wrap.innerHTML = filtered
-				.map((s) => {
-					const used = usedIds.has(s.id);
-					const count = useCounts[s.id] || 0;
-					return `
-        <div class="sound-row ${used ? "in-use" : ""}" data-sid="${s.id}">
-          <button class="sound-row-play ${playingId === s.id ? "on" : ""}" data-sid="${s.id}">
-            ${playingId === s.id ? "\u25A0" : "\u25B6"}
-          </button>
-          <div class="sound-row-info">
-            <div class="sound-row-name">${s.name}</div>
-            <div class="sound-row-meta">${s.size} // ${s.duration}</div>
-          </div>
-          ${
-				count > 0
-					? `<span class="sound-row-badge sound-row-badge--active">${count} event${count > 1 ? "s" : ""}</span>`
-					: `<span class="sound-row-badge">unused</span>`
-			}
-        </div>
-      `;
-				})
-				.join("");
-
-			wrap.querySelectorAll(".sound-row-play").forEach((btn) => {
-				btn.addEventListener("click", (e) => {
-					e.stopPropagation();
-					const sid = btn.dataset.sid;
-					playingId = playingId === sid ? null : sid;
-					if (playingId)
-						setTimeout(() => {
-							playingId = null;
-							renderSounds();
-						}, 2000);
-					renderSounds();
-				});
-			});
-		}
-
-		function renderEvents() {
-			const list = $("eventsList");
-			if (!list) return;
-			const events = GSI_EVENTS;
-
-			list.innerHTML = events
-				.map((ev) => {
-					const sid = assignments[ev.id];
-					const isMapped = !!sid;
-					const rowClass = isMapped
-						? "ev-row--mapped"
-						: "ev-row--unmapped";
-
-					// Build <option> list
-					const opts = SOUNDS.map(
-						(s) =>
-							`<option value="${s.id}" ${s.id === sid ? "selected" : ""}>${s.name}</option>`,
-					).join("");
-
-					// Status indicator
-					const statusHtml = isMapped
-						? `<span class="ev-status ev-status--mapped"><span class="ev-status-dot"></span>active</span>`
-						: `<span class="ev-status ev-status--unmapped"><span class="ev-status-dot"></span>none</span>`;
-
-					return `
-        <div class="ev-row ${rowClass}" data-eid="${ev.id}" data-cat="${ev.cat}">
-          <div class="ev-col-name">
-            <span class="ev-row-name">${ev.name}</span>
-            <span class="ev-row-id">${ev.id}</span>
-          </div>
-          <div class="ev-col-cat">
-            <span class="ev-cat ev-cat--${ev.cat}">${ev.cat}</span>
-          </div>
-          <div class="ev-col-desc">
-            <span class="ev-row-desc">${ev.desc}</span>
-          </div>
-          <div class="ev-col-status">
-            ${statusHtml}
-          </div>
-          <div class="ev-col-assign">
-            <span class="ev-assign-label">${isMapped ? "sound:" : "assign:"}</span>
-            <select class="ev-sound-select ${isMapped ? "ev-sound-select--active" : ""}" data-eid="${ev.id}">
-              <option value="">-- none --</option>
-              ${opts}
-            </select>
-            ${isMapped ? `<button class="ev-clear-btn" data-eid="${ev.id}">clear</button>` : ""}
-          </div>
-        </div>
-      `;
-				})
-				.join("");
-
-			// Select change handler
-			list.querySelectorAll(".ev-sound-select").forEach((sel) => {
-				sel.addEventListener("change", (e) => {
-					const eid = sel.dataset.eid;
-					const val = sel.value;
-					if (val) {
-						assignments[eid] = val;
-					} else {
-						delete assignments[eid];
-					}
-					renderAll();
-				});
-			});
-
-			// Clear button handler
-			list.querySelectorAll(".ev-clear-btn").forEach((btn) => {
-				btn.addEventListener("click", () => {
-					delete assignments[btn.dataset.eid];
-					renderAll();
-				});
-			});
-		}
-
-		function renderStats() {
-			const assigned = Object.keys(assignments).length;
-			const uniqueAssigned = new Set(Object.values(assignments)).size;
-			const el = (id) => document.getElementById(id);
-
-			const statTotal = el("statTotal");
-			const statAssigned = el("statAssigned");
-			const statUnassigned = el("statUnassigned");
-			const statEvCount = el("statEvCount");
-			const libCount = el("libCount");
-
-			if (statTotal) statTotal.textContent = String(SOUNDS.length);
-			if (statAssigned) statAssigned.textContent = String(assigned);
-			if (statUnassigned)
-				statUnassigned.textContent = String(
-					SOUNDS.length - uniqueAssigned,
-				);
-			if (statEvCount)
-				statEvCount.textContent = String(GSI_EVENTS.length);
-			if (libCount) libCount.textContent = SOUNDS.length + " files";
-			const evCountEl = el("evCount");
-			if (evCountEl)
-				evCountEl.textContent = GSI_EVENTS.length + " events";
-
-			// leaderboard
-			const counts = {};
-			for (const sid of Object.values(assignments))
-				counts[sid] = (counts[sid] || 0) + 1;
-			const sorted = Object.entries(counts)
-				.sort((a, b) => Number(b[1]) - Number(a[1]))
-				.slice(0, 3);
-			const maxC = sorted[0] ? Number(sorted[0][1]) : 1;
-
-			const leader = el("miniLeader");
-			if (leader) {
-				leader.innerHTML = sorted
-					.map(([sid, count], i) => {
-						const sound = SOUNDS.find((s) => s.id === sid);
-						const pct = (Number(count) / maxC) * 100;
-						return `
-          <div class="mini-leader-row">
-            <span class="mini-leader-rank">${i + 1}</span>
-            <span class="mini-leader-name">${sound ? sound.name : sid}</span>
-            <div class="mini-leader-bar"><div class="mini-leader-fill" style="width:${pct}%"></div></div>
-            <span class="mini-leader-count">${count}x</span>
-          </div>
-        `;
-					})
-					.join("");
-			}
-
-			// config json
-			const config = {};
-			for (const [eid, sid] of Object.entries(assignments)) {
-				const ev = GSI_EVENTS.find((e) => e.id === eid);
-				const sound = SOUNDS.find((s) => s.id === sid);
-				if (ev && sound) config[ev.name] = sound.name;
-			}
-			const configEl = el("configJson");
-			if (configEl)
-				configEl.textContent = JSON.stringify(config, null, 2);
-		}
-
-		function renderAll() {
-			renderSounds();
-			renderEvents();
-			renderStats();
-		}
-
-		// ═══════ EVENT HANDLERS ═══════
-		const searchEl = $("searchInput");
-		if (searchEl) {
-			searchEl.addEventListener("input", (e) => {
-				searchQuery = e.target.value;
-				renderSounds();
-			});
-		}
-
-		// (filter tabs removed)
-
-		// upload zone
-		const dropEl = $("uploadDrop");
-		const fileEl = $("fileInput");
-		if (dropEl && fileEl) {
-			dropEl.addEventListener("click", () => fileEl.click());
-			dropEl.addEventListener("dragover", (e) => {
-				e.preventDefault();
-				dropEl.classList.add("dragging");
-			});
-			dropEl.addEventListener("dragleave", () =>
-				dropEl.classList.remove("dragging"),
-			);
-			dropEl.addEventListener("drop", (e) => {
-				e.preventDefault();
-				dropEl.classList.remove("dragging");
-			});
-		}
-
-		// config accordion toggle
-		const configBar = $("configBar");
-		if (configBar) {
-			configBar.addEventListener("click", () => {
-				const body = $("configBody");
-				const icon = $("configToggleIcon");
-				if (body) body.classList.toggle("open");
-				if (icon) icon.classList.toggle("open");
-			});
-		}
-
-		renderAll();
-	</script>
+	<Footer sounds={SOUNDS} events={GSI_EVENTS} assignments={assignments} />
 </Layout>

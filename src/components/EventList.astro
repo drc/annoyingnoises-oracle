@@ -1,0 +1,76 @@
+---
+const { events = [], sounds = [], assignments = {} } = Astro.props;
+---
+
+<div class="events-panel">
+    <div class="panel-bar">
+        <span class="panel-bar-title">GSI Events</span>
+        <span class="panel-bar-count" id="evCount">
+            {events.length} events
+        </span>
+    </div>
+    <div class="events-scroll">
+        <div class="ev-header">
+            <div class="ev-header-cell">event</div>
+            <div class="ev-header-cell ev-header-cell--cat">type</div>
+            <div class="ev-header-cell ev-header-cell--desc">description</div>
+            <div class="ev-header-cell ev-header-cell--status">status</div>
+            <div class="ev-header-cell ev-header-cell--assign">assignment</div>
+        </div>
+        <div class="events-list" id="eventsList">
+            {
+                events.map((ev) => {
+                    const sid = assignments[ev.id];
+                    const isMapped = Boolean(sid);
+                    const rowClass = isMapped ? "ev-row--mapped" : "ev-row--unmapped";
+                    return (
+                        <div class={`ev-row ${rowClass}`} data-eid={ev.id} data-cat={ev.cat}>
+                            <div class="ev-col-name">
+                                <span class="ev-row-name">{ev.name}</span>
+                                <span class="ev-row-id">{ev.id}</span>
+                            </div>
+                            <div class="ev-col-cat">
+                                <span class={`ev-cat ev-cat--${ev.cat}`}>{ev.cat}</span>
+                            </div>
+                            <div class="ev-col-desc">
+                                <span class="ev-row-desc">{ev.desc}</span>
+                            </div>
+                            <div class="ev-col-status">
+                                {isMapped ? (
+                                    <span class="ev-status ev-status--mapped">
+                                        <span class="ev-status-dot"></span>active
+                                    </span>
+                                ) : (
+                                    <span class="ev-status ev-status--unmapped">
+                                        <span class="ev-status-dot"></span>none
+                                    </span>
+                                )}
+                            </div>
+                            <div class="ev-col-assign">
+                                <span class="ev-assign-label">{isMapped ? "sound:" : "assign:"}</span>
+                                <select
+                                    class={`ev-sound-select ${isMapped ? "ev-sound-select--active" : ""}`}
+                                    data-eid={ev.id}
+                                >
+                                    <option value="">-- none --</option>
+                                    {
+                                        sounds.map((sound) => (
+                                            <option value={sound.id} selected={sound.id === sid}>
+                                                {sound.name}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                {isMapped ? (
+                                    <button class="ev-clear-btn" data-eid={ev.id}>
+                                        clear
+                                    </button>
+                                ) : null}
+                            </div>
+                        </div>
+                    );
+                })
+            }
+        </div>
+    </div>
+</div>

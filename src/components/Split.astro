@@ -1,0 +1,14 @@
+---
+import EventList from "./EventList.astro";
+import SoundList from "./SoundList.astro";
+
+const { sounds = [], events = [], assignments = {} } = Astro.props;
+---
+
+<div class="split">
+    <!-- LEFT: SOUNDS -->
+    <SoundList sounds={sounds} assignments={assignments} />
+
+    <!-- RIGHT: EVENTS -->
+    <EventList events={events} sounds={sounds} assignments={assignments} />
+</div>

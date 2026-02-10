@@ -1,18 +1,74 @@
 ---
-import Sound from "./Sound.astro";
+const { sounds = [], assignments = {} } = Astro.props;
 
-const sounds = Astro.props.sounds;
+const assignedIds = new Set(Object.values(assignments));
+const useCounts = Object.values(assignments).reduce((acc, sid) => {
+    acc[sid] = (acc[sid] || 0) + 1;
+    return acc;
+}, {});
 ---
 
-<ul>
-    {
-        sounds?.data?.objects
-            .filter((o) => o.size > 0)
-            .map((sound) => (
-                <li>
-                    <Sound sound={sound} />
-                </li>
-            ))
-    }
-</ul>
-
+<div class="sounds-panel">
+    <div class="panel-bar">
+        <span class="panel-bar-title">Sound Library</span>
+        <span class="panel-bar-count" id="libCount">
+            {sounds.length} files
+        </span>
+    </div>
+    <div class="upload-strip">
+        <div class="upload-drop" id="uploadDrop">
+            <div class="upload-prompt">
+                drop audio files or <b>browse</b>
+            </div>
+            <input
+                type="file"
+                id="fileInput"
+                accept="audio/*"
+                multiple
+                hidden
+            />
+        </div>
+    </div>
+    <div class="search-strip">
+        <input
+            class="search-input"
+            type="text"
+            placeholder="$ grep ..."
+            id="searchInput"
+        />
+    </div>
+    <div class="sound-scroll">
+        <div id="soundList">
+            {
+                sounds.map((sound) => {
+                    const used = assignedIds.has(sound.id);
+                    const count = useCounts[sound.id] || 0;
+                    return (
+                        <div class={`sound-row ${used ? "in-use" : ""}`} data-sid={sound.id}>
+                            <button
+                                class="sound-row-play"
+                                data-sid={sound.id}
+                                aria-label={`play ${sound.name}`}
+                            >
+                                &#9654;
+                            </button>
+                            <div class="sound-row-info">
+                                <div class="sound-row-name">{sound.name}</div>
+                                <div class="sound-row-meta">
+                                    {sound.size} // {sound.duration}
+                                </div>
+                            </div>
+                            {count > 0 ? (
+                                <span class="sound-row-badge sound-row-badge--active">
+                                    {count} event{count > 1 ? "s" : ""}
+                                </span>
+                            ) : (
+                                <span class="sound-row-badge">unused</span>
+                            )}
+                        </div>
+                    );
+                })
+            }
+        </div>
+    </div>
+</div>

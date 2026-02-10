@@ -1,0 +1,25 @@
+---
+const { sounds = [], events = [], assignments = {} } = Astro.props;
+
+const config = {};
+for (const [eid, sid] of Object.entries(assignments)) {
+    const ev = events.find((event) => event.id === eid);
+    const sound = sounds.find((s) => s.id === sid);
+    if (ev && sound) config[ev.name] = sound.name;
+}
+
+const configJson = JSON.stringify(config, null, 2);
+---
+
+<div class="config-section">
+    <div class="config-bar" id="configBar">
+        <span class="config-bar-label">Configuration Output</span>
+        <div class="config-bar-right">
+            <span class="config-bar-endpoint">/api/config.json</span>
+            <span class="config-bar-toggle" id="configToggleIcon">&#9660;</span>
+        </div>
+    </div>
+    <div class="config-body" id="configBody">
+        <pre class="config-json" id="configJson">{configJson}</pre>
+    </div>
+</div>
